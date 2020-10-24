@@ -69,21 +69,6 @@ def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesen
     arr1 = gene_arr[ : int(len(gene_arr) / 2)]
     arr2 = gene_arr[int(len(gene_arr) / 2) : ]
 
-    #print("*****arr1 and arr2 *****")
-    #for i in range( len(arr1) ):
-    #    print("arr1 : ", end = '')
-    #    for j in range( GENE_LEN ):
-    #        print(" %d " %arr1[i][j], end = '')
-    #    print('')
-    #    print("arr2 : ", end = '')
-    #    for j in range( GENE_LEN ):
-    #        print(" %d " %arr2[i][j], end = '')
-    #    print('')
-    #    print('')
-
-
-
-
     offspring_arr= [None] * int(len(gene_arr) / 2)
     for i in range( int( len(gene_arr) / 2) ):
         offspring_arr[i] = [None] * GENE_LEN
@@ -91,15 +76,6 @@ def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesen
     flag_arr =  [[1] * int( GENE_LEN / 2 ) + [0] * int( GENE_LEN / 2) for i in range( int(len(gene_arr) /2 ))]
     for i in range( int(len(gene_arr) / 2 ) ):
         random.shuffle(flag_arr[i])
-
-    #print("*****flag_arr*****")
-    #for i in range(len(flag_arr)):
-    #    print('[', end = '')
-    #    for j in range(GENE_LEN):
-    #        print(' ', end = '')
-    #        print(flag_arr[i][j], end = '')
-    #        print(' ', end = '')
-    #    print(']')
 
     for i in range( int(len(gene_arr) /2) ):
         j = 0 # for while
@@ -156,8 +132,8 @@ def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesen
     while count < len(offspring_arr):
         if offspring_arr[count] == None:
             del(offspring_arr[count])
-            print("NONE DELETED")
-        count += 1
+        else:
+            count += 1
 
     return offspring_arr
 
@@ -203,30 +179,16 @@ def GetGeneArrFitAver(gene_arr):
 
 
 #main process
-gene_arr = GeneInit(50, 3)
+gene_arr = GeneInit(100000, 3)
 #Print2DGeneArr(gene_arr, GENE_LEN)
 
 print("inital gene fitness average : %.3f" % GetGeneArrFitAver(gene_arr))
 
-for i in range(3):
+for i in range(20):
     survived_gene_arr = GeneSurvival(gene_arr)
     gene_arr = ( CrossGene(survived_gene_arr) + CrossGene(survived_gene_arr) )
-    print("****#%d gene fitness average : %.3f****" % (i, GetGeneArrFitAver(gene_arr)) )
-    Print2DGeneArr(gene_arr, GENE_LEN)
+    print("****#%d gene fitness average : %.3f and len(gene_arr) : %d****" % (i, GetGeneArrFitAver(gene_arr), len(gene_arr)) )
+    #Print2DGeneArr(gene_arr, GENE_LEN)
 
-
-
-#print('\n')
-#print("****descendant*****")
-#Print2DGeneArr(descendant_arr, GENE_LEN)
-#
-#print("***** result of survival *****")
-#survive_gene_arr = GeneSurvival(gene_arr)
-#for i in range( int( len(gene_arr) / 2)):
-#    print('[', end = '')
-#    for j in range( GENE_LEN ):
-#        print(' %d ' % survive_gene_arr[i][0][j], end ='')
-#    print(']', end = '')
-#    print('       FITNESS : %f ' % survive_gene_arr[i][1])
 
 
