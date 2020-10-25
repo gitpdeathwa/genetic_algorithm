@@ -2,15 +2,12 @@ import random
 import math
 import pdb
 
-GENE_LEN = 10 # need to be bigger than 1
+GENE_LEN = 10 #  2 <= GENE_LEN  < 90,000,00
 
 coordinate_list = {1 : [7, 11], 2 : [3, 6], 3 : [1, 5], 4 : [17, 5], 5: [15, 13],
                     6 : [12, 7], 7 : [5, 4], 8 : [13, 19], 9 : [7, 9], 10 : [18, 17] }
-#generate random initial gene 
+
 #start_point need to be key of dict
-
-
-
 def GeneInit(gene_num, start_point):
     gene_arr = [None] * gene_num
     for i in range(0, gene_num):
@@ -36,30 +33,72 @@ def Fitness(gene):
     fitness = 10000 / dist_total
     return fitness
 
+
 def GeneSurvival(gene_arr):
-    #fitness_ tabel define
-    fitness_table = [[0] * 2 for i in range( len(gene_arr) )]
+
+    fitness_table = [[0] * 3 for i in range( len(gene_arr) )]
     for i in range( len(gene_arr) ):
         fitness_table[i][0] = i
         fitness_table[i][1] = Fitness(gene_arr[i])
 
-    fitness_table = sorted(fitness_table, key = lambda x : x[1], reverse = True)
+    #get weight(가중치)
+    fitness_total = sum( iter_[1] for iter_ in fitness_table )
 
-    survived_gene_arr = [None] *  len(gene_arr)
-    for i in range( len(gene_arr) ):
-        survived_gene_arr[i] = gene_arr[fitness_table[i][0]]
+    for iter_ in fitness_table:
+        iter_[2] = round(iter_[1] / (fitness_total), 7) # 천만분의 일까지 표시
+    
+    weight_min = min( iter_[2] for iter_ in fitness_table )
+    
+    #print("weights_min : %f" % weight_min)
+        
+    invar_N_power = 1
+    while True:
+        if (1/10)  ** invar_N_power < weight_min :
+            break
+        invar_N_power += 1
+    
+    invar_N_power += 1
 
-    return survived_gene_arr
+    invar_N = 10 ** invar_N_power
 
-    #return
-    fitness_table = [None] * len(gene_arr)
-    for i in range(len(gene_arr)):
-        fitness_table[i] = [None] * 2
-        fitness_table[i][0] = gene_arr[i]
-        fitness_table[i][1] = Fitness(gene_arr[i])
 
-    sorted_fitness_table = sorted(fitness_table, key = lambda x : x[1], reverse = True)
-    return sorted_fitness_table[ 0 : int(len(gene_arr)/ 2)]
+        
+    accrue_weight = [ [None] * 2 for i in range( len(gene_arr) ) ]
+
+    for idx, val in enumerate(accrue_weight):
+        accrue_weight[idx][0] = gene_arr[idx]
+        accrue_weight[idx][1] = int(fitness_table[idx][2] * invar_N)
+    
+
+    for idx in range( 1, len(accrue_weight) ):
+        accrue_weight[idx][1] += accrue_weight[idx - 1][1]
+    
+    offspring = []
+    
+
+    loop_val = int( len(accrue_weight) * 3 / 5 )
+    
+    for i in range( loop_val ):
+        random_val = random.randrange(0, accrue_weight[-1][1])
+        for idx, element in enumerate(accrue_weight):
+            if random_val <= element[1]:
+                offspring.append(element[0])
+                if idx != 0:
+                    weight = accrue_weight[idx][1] - accrue_weight[idx - 1][1]
+                else:
+                    weight = accrue_weight[idx][1]
+
+                for iter_2 in accrue_weight[idx + 1 : len(accrue_weight)]:
+                    iter_2[1] -= weight
+
+                del(accrue_weight[idx])
+                break
+             
+    return offspring
+    
+
+
+
 
 def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesending order)
     if (len(gene_arr) % 2) == 1 :
@@ -69,6 +108,9 @@ def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesen
     arr1 = gene_arr[ : int(len(gene_arr) / 2)]
     arr2 = gene_arr[int(len(gene_arr) / 2) : ]
 
+
+
+
     offspring_arr= [None] * int(len(gene_arr) / 2)
     for i in range( int( len(gene_arr) / 2) ):
         offspring_arr[i] = [None] * GENE_LEN
@@ -76,7 +118,6 @@ def CrossGene(gene_arr): # recommand gene_arr to be sorted by fitnes (by decesen
     flag_arr =  [[1] * int( GENE_LEN / 2 ) + [0] * int( GENE_LEN / 2) for i in range( int(len(gene_arr) /2 ))]
     for i in range( int(len(gene_arr) / 2 ) ):
         random.shuffle(flag_arr[i])
-
     for i in range( int(len(gene_arr) /2) ):
         j = 0 # for while
         conflicted_index_arr = []
@@ -184,7 +225,7 @@ gene_arr = GeneInit(100000, 3)
 
 print("inital gene fitness average : %.3f" % GetGeneArrFitAver(gene_arr))
 
-for i in range(20):
+for i in range(7):
     survived_gene_arr = GeneSurvival(gene_arr)
     gene_arr = ( CrossGene(survived_gene_arr) + CrossGene(survived_gene_arr) )
     print("****#%d gene fitness average : %.3f and len(gene_arr) : %d****" % (i, GetGeneArrFitAver(gene_arr), len(gene_arr)) )
